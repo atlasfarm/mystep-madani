@@ -1,1 +1,1 @@
-web: gunicorn app:app
+web: php -S 0.0.0.0:$PORT
