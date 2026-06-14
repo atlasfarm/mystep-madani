@@ -15,13 +15,29 @@ if ($host === '') {
     exit;
 }
 
-$webhookUrl = $scheme . '://' . $host . '/bot.php';
-$telegramUrl = 'https://api.telegram.org/bot' . $token . '/setWebhook?' . http_build_query([
-    'url' => $webhookUrl
+$webhookUrl = 'https://' . $host . '/bot.php';
+$telegramUrl = 'https://api.telegram.org/bot' . $token . '/setWebhook';
+
+$payload = http_build_query([
+    'url' => $webhookUrl,
+    'drop_pending_updates' => 'true'
 ]);
 
-$response = file_get_contents($telegramUrl);
+$context = stream_context_create([
+    'http' => [
+        'method' => 'POST',
+        'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+        'content' => $payload,
+        'ignore_errors' => true
+    ]
+]);
 
-echo $response ?: json_encode(['ok' => false, 'error' => 'Gagal set webhook.']);
+$response = file_get_contents($telegramUrl, false, $context);
+
+echo $response ?: json_encode([
+    'ok' => false,
+    'error' => 'Gagal set webhook.',
+    'webhook_url' => $webhookUrl
+]);
 
 ?>
